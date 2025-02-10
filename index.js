@@ -65,7 +65,7 @@ app.message(async ({ message, say }) => {
     } else {
       console.error("Unexpected response from OpenAI:", response);
       await say(
-        "Oi mate, the response from my brain (OpenAI) is a bit off. Try again later!"
+        "Hmm, I'm having trouble coming up with something helpful right now. Try again later or Ping my overlord, Lex!"
       );
     }
   } catch (error) {
