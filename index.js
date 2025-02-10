@@ -27,7 +27,7 @@ app.message(async ({ message, say }) => {
   if (message.subtype || !message.text) return;
 
   try {
-    const userMessage = message.text.toLowerCase(); // Normalize input to lowercase
+    const userMessage = message.text.toLowerCase();
 
     // Easter egg for "who created you"
     if (userMessage.includes("who created you")) {
@@ -46,37 +46,31 @@ app.message(async ({ message, say }) => {
       return; // Stop further processing
     }
 
-    // Send the user's message to OpenAI for a response
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // or "gpt-4o"
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are an intelligent and professional IT support assistant named Sentinel AI. You provide clear, concise, and accurate technical advice with a polite and friendly tone.",
+            "You are an intelligent and professional IT support assistant named Sentinel AI. You provide clear, concise, and accurate technical advice with a polite and friendly tone. Your goal is to help users solve their technical problems efficiently while maintaining a calm and reassuring demeanor. Avoid humor and focus on being as helpful and insightful as possible.",
         },
         { role: "user", content: userMessage },
       ],
     });
 
-    if (
-      response &&
-      response.data &&
-      response.data.choices &&
-      response.data.choices.length > 0
-    ) {
-      const botReply = response.data.choices[0].message.content;
+    if (response && response.choices && response.choices.length > 0) {
+      const botReply = response.choices[0].message.content;
 
       await say(botReply);
     } else {
       console.error("Unexpected response from OpenAI:", response);
       await say(
-        "Hmm, I'm having trouble coming up with something helpful right now. Try again later or Ping my overlord, Lex!"
+        "Oi mate, the response from my brain (OpenAI) is a bit off. Try again later!"
       );
     }
   } catch (error) {
     console.error("Error communicating with OpenAI:", error);
-    await say("Oops, something went wrong on my end. Try again later!");
+    await say("Oi mate, I’m having a brain fart. Try again later.");
   }
 });
 
