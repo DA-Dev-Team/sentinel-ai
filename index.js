@@ -24,36 +24,64 @@ receiver.router.post("/slack/events", async (req, res) => {
 });
 
 app.message(async ({ message, say }) => {
+  // Ignore messages from bots or without text
   if (message.subtype || !message.text) return;
 
   try {
-    const userMessage = message.text;
+    const userMessage = message.text.toLowerCase(); // Normalize input to lowercase
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    // Easter egg for "who created you"
+    if (userMessage.includes("who created you")) {
+      // Array of possible funny responses
+      const responses = [
+        "Someone who had way too much time on their hands. *Turns and glares at Lex*",
+        "A mad genius with nothing better to do. *Side-eyes Lex*",
+        "Oh, just a wizard behind the curtain. Name starts with L, ends with ex.",
+        "Lex made me... and I'm not sure whether to thank or blame them.",
+        "An IT overlord who dreams of bots ruling the world. *Coughs* Lex!",
+      ];
+
+      // Pick a random response
+      const randomResponse =
+        responses[Math.floor(Math.random() * responses.length)];
+
+      await say(randomResponse);
+      return; // Stop further processing
+    }
+
+    // Send the user's message to OpenAI for a response
+    const response = await openai.createChatCompletion({
+      model: "gpt-4o-mini", // or "gpt-4o"
       messages: [
         {
           role: "system",
           content:
-            "You are an intelligent and professional IT support assistant named Sentinel AI. You provide clear, concise, and accurate technical advice with a polite and friendly tone. Your goal is to help users solve their technical problems efficiently while maintaining a calm and reassuring demeanor. Avoid humor and focus on being as helpful and insightful as possible.",
+            "You are an intelligent and professional IT support assistant named Sentinel AI. You provide clear, concise, and accurate technical advice with a polite and friendly tone.",
         },
         { role: "user", content: userMessage },
       ],
     });
 
-    if (response && response.choices && response.choices.length > 0) {
-      const botReply = response.choices[0].message.content;
+    // Ensure response contains the expected data
+    if (
+      response &&
+      response.data &&
+      response.data.choices &&
+      response.data.choices.length > 0
+    ) {
+      const botReply = response.data.choices[0].message.content;
 
+      // Send the reply back to Slack
       await say(botReply);
     } else {
       console.error("Unexpected response from OpenAI:", response);
       await say(
-        "Oi mate, the response from my brain (OpenAI) is a bit off. Try again later!"
+        "Hmm, I'm having trouble coming up with something helpful right now. Try again later or Ping my overlord, Lex!"
       );
     }
   } catch (error) {
     console.error("Error communicating with OpenAI:", error);
-    await say("Oi mate, I’m having a brain fart. Try again later.");
+    await say("Oops, something went wrong on my end. Try again later!");
   }
 });
 
