@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + "/.env" });
 const { App, ExpressReceiver } = require("@slack/bolt");
 const OpenAI = require("openai");
 
@@ -30,7 +30,7 @@ app.message(async ({ message, say }) => {
     const userMessage = message.text;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
