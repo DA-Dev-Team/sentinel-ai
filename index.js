@@ -50,7 +50,7 @@ app.message(async ({ message, say }) => {
     }
 
     // Send the user's message to OpenAI for a response
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-4o-mini", // or "gpt-4o"
       messages: [
         {
