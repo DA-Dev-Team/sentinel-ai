@@ -24,7 +24,6 @@ receiver.router.post("/slack/events", async (req, res) => {
 });
 
 app.message(async ({ message, say }) => {
-  // Ignore messages from bots or without text
   if (message.subtype || !message.text) return;
 
   try {
@@ -32,7 +31,6 @@ app.message(async ({ message, say }) => {
 
     // Easter egg for "who created you"
     if (userMessage.includes("who created you")) {
-      // Array of possible funny responses
       const responses = [
         "Someone who had way too much time on their hands. *Turns and glares at Lex*",
         "A mad genius with nothing better to do. *Side-eyes Lex*",
@@ -41,7 +39,6 @@ app.message(async ({ message, say }) => {
         "An IT overlord who dreams of bots ruling the world. *Coughs* Lex!",
       ];
 
-      // Pick a random response
       const randomResponse =
         responses[Math.floor(Math.random() * responses.length)];
 
@@ -62,7 +59,6 @@ app.message(async ({ message, say }) => {
       ],
     });
 
-    // Ensure response contains the expected data
     if (
       response &&
       response.data &&
@@ -71,7 +67,6 @@ app.message(async ({ message, say }) => {
     ) {
       const botReply = response.data.choices[0].message.content;
 
-      // Send the reply back to Slack
       await say(botReply);
     } else {
       console.error("Unexpected response from OpenAI:", response);
