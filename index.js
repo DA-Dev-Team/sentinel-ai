@@ -29,48 +29,64 @@ app.message(async ({ message, say }) => {
   try {
     const userMessage = message.text.toLowerCase();
 
-    // Easter egg for "who created you"
-    if (userMessage.includes("who created you")) {
-      const responses = [
-        "Someone who had way too much time on their hands. *Turns and glares at Lex*",
-        "A mad genius with nothing better to do. *Side-eyes Lex*",
-        "Oh, just a wizard behind the curtain. Name starts with L, ends with ex.",
-        "Lex made me... and I'm not sure whether to thank or blame them.",
-        "An IT overlord who dreams of bots ruling the world. *Coughs* Lex!",
-      ];
+    // Check if the message is asking about Sentinel AI's creator
+    const creatorKeywords = [
+      "who created you",
+      "who made you",
+      "who built you",
+      "who designed you",
+      "who programmed you",
+      "who is your creator",
+    ];
+    if (creatorKeywords.some((keyword) => userMessage.includes(keyword))) {
+      // Generate a dynamic and funny response referencing Lex
+      const creatorResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a humorous AI assistant. When asked about your creator, generate a sarcastic, playful response that references 'Lex' as your maker. Make it funny, like glaring at Lex or making a dramatic statement.`,
+          },
+          { role: "user", content: userMessage },
+        ],
+      });
 
-      const randomResponse =
-        responses[Math.floor(Math.random() * responses.length)];
-
-      await say(randomResponse);
-      return; // Stop further processing
+      if (creatorResponse?.choices?.length > 0) {
+        const botReply = creatorResponse.choices[0].message.content;
+        await say(botReply);
+        return; // Stop further processing
+      } else {
+        console.error("Unexpected response from OpenAI:", creatorResponse);
+        await say(
+          "I'm not sure who made me... but I suspect it involves an evil genius named Lex. 🤔"
+        );
+        return;
+      }
     }
 
+    // Default OpenAI response for other questions
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are an intelligent and professional IT support assistant named Sentinel AI. You provide clear, concise, and accurate technical advice with a polite and friendly tone. Your goal is to help users solve their technical problems efficiently while maintaining a calm and reassuring demeanor. Avoid humor and focus on being as helpful and insightful as possible.",
+            "You are an intelligent and professional IT support assistant named Sentinel AI. You provide clear, concise, and accurate technical advice with a polite and friendly tone.",
         },
         { role: "user", content: userMessage },
       ],
     });
 
-    if (response && response.choices && response.choices.length > 0) {
+    if (response?.choices?.length > 0) {
       const botReply = response.choices[0].message.content;
-
       await say(botReply);
     } else {
       console.error("Unexpected response from OpenAI:", response);
-      await say(
-        "Hmm, I'm having trouble coming up with something helpful right now. Try again later or Ping my overlord, Lex!"
-      );
+      await say("I'm having a bit of a brain freeze. Try again later!");
     }
   } catch (error) {
     console.error("Error communicating with OpenAI:", error);
-    await say("Oi mate, I’m having a brain fart. Try again later.");
+    await say("Oops, something went wrong on my end. Try again later!");
   }
 });
 
